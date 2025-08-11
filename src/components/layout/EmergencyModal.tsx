@@ -20,7 +20,7 @@ export function EmergencyModal() {
             {t.title}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-gray-700">
-            {t.description}
+            <div>{t.description}</div>
             <ul className="space-y-2 my-4">
               <li className="flex items-start">
                 <Phone className="mr-2 mt-1 h-4 w-4 shrink-0 text-red-500" />
