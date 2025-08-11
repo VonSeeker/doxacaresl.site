@@ -13,7 +13,7 @@ export function Header() {
 
   return (
     <>
-      <header className="bg-gradient-to-r from-primary to-accent shadow-md">
+      <header className="bg-gradient-to-r from-primary to-accent shadow-md print:hidden">
         <div className="container mx-auto flex items-center justify-between px-4 py-3">
           <div className="flex items-center space-x-2">
             <HeartPulse className="h-7 w-7 text-white" />

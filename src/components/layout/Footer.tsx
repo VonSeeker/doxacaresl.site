@@ -4,13 +4,14 @@
 import { useAppContext } from '@/context/AppContext';
 import { translations } from '@/lib/translations';
 import { Phone } from 'lucide-react';
+import Link from 'next/link';
 
 export function Footer() {
     const { language } = useAppContext();
     const t = translations[language].footer;
 
     return (
-        <footer className="bg-primary text-primary-foreground">
+        <footer className="bg-primary text-primary-foreground print:hidden">
             <div className="container mx-auto px-4 py-6">
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                     <div>
@@ -28,6 +29,9 @@ export function Footer() {
                                     <a href={link.url} target="_blank" rel="noopener noreferrer" className="hover:underline">{link.text}</a>
                                 </li>
                             ))}
+                             <li>
+                                <Link href="/summary" className="hover:underline">Project Summary</Link>
+                            </li>
                         </ul>
                     </div>
                     <div>
