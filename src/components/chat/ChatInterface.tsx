@@ -1,155 +1,198 @@
 'use client';
 
-import * as React from 'react';
+import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Send, MessageCircle, Bot, User } from 'lucide-react';
+import { askChatbot } from '@/app/actions';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, MessageCircle, Bot, User } from 'lucide-react';
-import { handleUserQuery } from '@/app/actions';
 import { useAppContext } from '@/context/AppContext';
 import { translations } from '@/lib/translations';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
-import { useFormState, useFormStatus } from 'react-dom';
+import { Skeleton } from '@/components/ui/skeleton';
 
-interface Message {
-  id: string;
-  role: 'user' | 'bot';
-  content: string;
-}
+const chatSchema = z.object({
+  message: z.string().min(1, 'Message cannot be empty'),
+});
 
-interface ChatInterfaceProps {
-  initialMessage?: string;
-}
+type ChatFormData = z.infer<typeof chatSchema>;
+export type Message = {
+  id: number;
+  text: string;
+  sender: 'user' | 'bot';
+};
 
-export function ChatInterface({ initialMessage }: ChatInterfaceProps) {
+export type ChatInterfaceHandles = {
+  submitQuery: (query: string) => void;
+};
+
+interface ChatInterfaceProps {}
+
+const ChatInterface = forwardRef<ChatInterfaceHandles, ChatInterfaceProps>((props, ref) => {
   const { language } = useAppContext();
-  const t = translations[language];
-  const scrollAreaRef = React.useRef<React.ElementRef<'div'>>(null);
-  const [messages, setMessages] = React.useState<Message[]>([]);
-  const formRef = React.useRef<HTMLFormElement>(null);
+  const t = translations[language].home.chat;
 
-  const [state, formAction] = useFormState(handleUserQuery, {
-    response: '',
-    error: null,
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const chatWindowRef = useRef<HTMLDivElement>(null);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ChatFormData>({
+    resolver: zodResolver(chatSchema),
   });
 
-  React.useEffect(() => {
-    // Add initial bot message
-    setMessages([
-        { id: 'welcome', role: 'bot', content: t.home.welcomeChatText }
-    ]);
-  }, [t.home.welcomeChatText]);
-
-  React.useEffect(() => {
-    if (initialMessage) {
-      const userMessage: Message = { id: `user-${Date.now()}`, role: 'user', content: initialMessage };
-      setMessages(prev => [...prev, userMessage]);
-      // Use a timeout to ensure state update before submitting
-      setTimeout(() => {
-        const formData = new FormData();
-        formData.append('query', initialMessage);
-        formAction(formData);
-      }, 0);
+  useEffect(() => {
+    if (messages.length === 0 && !isLoading) {
+      setMessages([{ id: 0, text: t.welcome, sender: 'bot' }]);
     }
-  }, [initialMessage, formAction]);
+  }, [t.welcome, messages.length, isLoading]);
 
-
-  React.useEffect(() => {
-    if (state.response) {
-      const botMessage: Message = { id: `bot-${Date.now()}`, role: 'bot', content: state.response };
-      setMessages((prev) => [...prev.filter(m => m.id !== 'thinking'), botMessage]);
-    } else if (state.error) {
-        const errorMessage: Message = { id: `bot-${Date.now()}`, role: 'bot', content: `Sorry, something went wrong: ${state.error}` };
-        setMessages((prev) => [...prev.filter(m => m.id !== 'thinking'), errorMessage]);
+  useEffect(() => {
+    if (chatWindowRef.current) {
+      chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
     }
-  }, [state]);
+  }, [messages, isLoading]);
 
-  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const query = formData.get('query') as string;
+  const processSubmit = async (data: ChatFormData) => {
+    if (!data.message.trim()) return;
+    const userMessage: Message = { id: Date.now(), text: data.message, sender: 'user' };
+    setMessages((prev) => [...prev, userMessage]);
+    setIsLoading(true);
+    reset();
 
-    if (!query.trim()) return;
-
-    const userMessage: Message = { id: `user-${Date.now()}`, role: 'user', content: query };
-    const thinkingMessage: Message = { id: 'thinking', role: 'bot', content: '...' };
-
-    setMessages((prev) => [...prev, userMessage, thinkingMessage]);
-    
-    formAction(formData);
-
-    formRef.current?.reset();
+    try {
+      const botResponse = await askChatbot(data.message, language);
+      const botMessage: Message = { id: Date.now() + 1, text: botResponse, sender: 'bot' };
+      setMessages((prev) => [...prev, botMessage]);
+    } catch (error) {
+      console.error('Error fetching bot response:', error);
+      const errorMessage: Message = {
+        id: Date.now() + 1,
+        text: "Sorry, I'm having trouble connecting. Please try again later.",
+        sender: 'bot',
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  React.useEffect(() => {
-    if (scrollAreaRef.current) {
-        const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-        if(viewport) {
-             viewport.scrollTop = viewport.scrollHeight;
-        }
-    }
-  }, [messages]);
+  const handleQuickReply = (text: string) => {
+    processSubmit({ message: text });
+  };
 
+  useImperativeHandle(ref, () => ({
+    submitQuery(query: string) {
+      processSubmit({ message: query });
+    },
+  }));
 
   return (
     <Card className="overflow-hidden shadow-md">
       <CardHeader className="bg-green-600 p-3">
-        <CardTitle className="flex items-center font-bold text-white">
+        <CardTitle className="flex items-center font-bold text-white text-base">
           <MessageCircle className="mr-2 h-5 w-5" />
-          {t.home.chatTitle}
+          {t.title}
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="h-64" ref={scrollAreaRef}>
-          <div className="p-4 space-y-4">
-            {messages.map((message) => (
-              <div key={message.id} className={cn('flex items-end gap-2', message.role === 'user' ? 'justify-end' : 'justify-start')}>
-                {message.role === 'bot' && (
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-green-700 text-white"><Bot className="h-5 w-5"/></AvatarFallback>
-                  </Avatar>
+        <div ref={chatWindowRef} className="h-64 overflow-y-auto p-4 bg-gray-50 space-y-4">
+          {messages.map((msg) => (
+            <div
+              key={msg.id}
+              className={cn('flex items-end gap-2', msg.sender === 'user' ? 'justify-end' : 'justify-start')}
+            >
+              {msg.sender === 'bot' && (
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-green-700 text-white">
+                    <Bot className="h-5 w-5" />
+                  </AvatarFallback>
+                </Avatar>
+              )}
+              <div
+                className={cn(
+                  'rounded-lg px-3 py-2 max-w-[80%] shadow-sm',
+                  msg.sender === 'user' ? 'bg-green-100' : 'bg-white'
                 )}
-                <div
-                  className={cn(
-                    'max-w-[75%] rounded-lg p-3 shadow-sm',
-                    message.role === 'user' ? 'bg-green-100' : 'bg-white',
-                    message.id === 'thinking' && 'animate-pulse'
-                  )}
-                >
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                </div>
-                 {message.role === 'user' && (
+              >
+                <p className="text-sm text-foreground whitespace-pre-wrap">{msg.text}</p>
+                {msg.sender === 'bot' && messages.length === 1 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {t.quickReplies.map((reply, i) => (
+                      <Button
+                        key={i}
+                        size="sm"
+                        variant="outline"
+                        className="text-xs h-auto py-1 px-2"
+                        onClick={() => handleQuickReply(reply)}
+                      >
+                        {reply}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {msg.sender === 'user' && (
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-gray-300"><User className="h-5 w-5"/></AvatarFallback>
                   </Avatar>
                 )}
+            </div>
+          ))}
+          {isLoading && (
+            <div className="flex items-end gap-2 justify-start">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="bg-green-700 text-white">
+                  <Bot className="h-5 w-5" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="rounded-lg px-3 py-2 bg-white shadow-sm">
+                <div className="flex items-center space-x-1">
+                  <span className="h-2 w-2 bg-muted-foreground rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                  <span className="h-2 w-2 bg-muted-foreground rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                  <span className="h-2 w-2 bg-muted-foreground rounded-full animate-bounce"></span>
+                </div>
               </div>
-            ))}
-          </div>
-        </ScrollArea>
-        <div className="border-t border-gray-200 bg-gray-100 p-3">
-          <form ref={formRef} onSubmit={handleFormSubmit} className="flex items-center">
+            </div>
+          )}
+          {isLoading && messages.length === 0 && (
+            <div className="space-y-2">
+              <Skeleton className="h-12 w-3/4" />
+              <div className="flex justify-end">
+                <Skeleton className="h-8 w-1/2" />
+              </div>
+              <Skeleton className="h-16 w-4/5" />
+            </div>
+          )}
+        </div>
+        <div className="p-3 bg-gray-100 border-t">
+          <form onSubmit={handleSubmit(processSubmit)} className="flex items-center">
             <Input
-              name="query"
-              placeholder={t.home.chatInputPlaceholder}
-              className="flex-grow rounded-full border-gray-300 bg-white focus:ring-2 focus:ring-green-500"
-              disabled={!!messages.find(m => m.id === 'thinking')}
+              {...register('message')}
+              placeholder={t.placeholder}
+              className="flex-grow bg-white focus:ring-2 focus:ring-green-500 rounded-full"
+              disabled={isLoading}
             />
-            <SubmitButton />
+            <Button type="submit" size="icon" className="ml-2 shrink-0 rounded-full bg-green-600 text-white transition-colors hover:bg-green-700" disabled={isLoading}>
+              <Send className="h-5 w-5" />
+            </Button>
           </form>
+          {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message.message}</p>}
         </div>
       </CardContent>
     </Card>
   );
-}
+});
 
-function SubmitButton() {
-    const { pending } = useFormStatus();
-    return (
-        <Button type="submit" size="icon" className="ml-2 shrink-0 rounded-full bg-green-600 text-white transition-colors hover:bg-green-700" disabled={pending}>
-            <Send className="h-5 w-5" />
-        </Button>
-    )
-}
+ChatInterface.displayName = 'ChatInterface';
+
+export default ChatInterface;

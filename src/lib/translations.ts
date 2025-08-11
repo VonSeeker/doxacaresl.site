@@ -20,16 +20,21 @@ export const translations = {
         'Avoid contact with wild animals',
         'Isolate if rash/fever develops',
       ],
-      quickChatsTitle: 'Quick Chats',
       quickChats: {
-        malaria: 'Malaria',
-        pregnancy: 'Pregnancy',
-        diarrhea: 'Diarrhea',
-        hypertension: 'Hypertension',
+        title: 'Quick Chats',
+        topics: {
+          malaria: 'Malaria',
+          pregnancy: 'Pregnancy',
+          diarrhea: 'Diarrhea',
+          hypertension: 'Hypertension',
+        }
       },
-      chatTitle: 'Chat with DoxaCare AI',
-      welcomeChatText: 'Hello! How can I assist you with your health today? You can describe symptoms, ask for advice, or find clinics near you.',
-      quickReplies: ['I have fever', 'Mosquito bite advice', 'Find clinic near me'],
+      chat: {
+        title: 'Chat with DoxaCare AI',
+        welcome: 'Hello! How can I assist you with your health today? You can describe symptoms, ask for advice, or find clinics near you.',
+        quickReplies: ['I have fever', 'Mosquito bite advice', 'Find clinic near me'],
+        placeholder: 'Type your health question here...',
+      },
       culturalTitle: 'Cultural Health Tips',
       localTipTitle: 'Local Health Wisdom',
       culturalTipText: [
@@ -37,7 +42,6 @@ export const translations = {
         'Use insecticide-treated nets (ITNs) every night during rainy season.',
         'Sun-dry clothes thoroughly to kill germs.',
       ],
-      chatInputPlaceholder: 'Type your health question here...',
     },
     healthTopics: {
         title: 'Health Topics',
@@ -119,16 +123,21 @@ export const translations = {
         'No touch bush meat or wild animal',
         'Stay for house if you get rash or fever',
       ],
-      quickChatsTitle: 'Quick Chat',
       quickChats: {
-        malaria: 'Malaria',
-        pregnancy: 'Belleful',
-        diarrhea: 'Run belle',
-        hypertension: 'High BP',
+        title: 'Quick Chat',
+        topics: {
+            malaria: 'Malaria',
+            pregnancy: 'Belleful',
+            diarrhea: 'Run belle',
+            hypertension: 'High BP',
+        }
       },
-      chatTitle: 'Chat wit DoxaCare AI',
-      welcomeChatText: 'How you dey? Wetin I fit do for you health today? You fit talk about sick wey you get, ask for advice, or find clinic close to you.',
-      quickReplies: ['I get fever', 'Advice for mosquito', 'Find clinic close to me'],
+      chat: {
+        title: 'Chat wit DoxaCare AI',
+        welcome: 'How you dey? Wetin I fit do for you health today? You fit talk about sick wey you get, ask for advice, or find clinic close to you.',
+        quickReplies: ['I get fever', 'Advice for mosquito', 'Find clinic close to me'],
+        placeholder: 'Type you health question ya...',
+      },
       culturalTitle: 'Health Tip for We Culture',
       localTipTitle: 'Local Health Sense',
       culturalTipText: [
@@ -136,7 +145,6 @@ export const translations = {
         'Use net wey get medicine for kill mosquito every night when rain dey fall.',
         'Make sun dry your clothes proper to kill all germ.',
       ],
-      chatInputPlaceholder: 'Type you health question ya...',
     },
     healthTopics: {
         title: 'Health Topic Dem',
@@ -198,3 +206,5 @@ export const translations = {
     },
   },
 };
+
+    

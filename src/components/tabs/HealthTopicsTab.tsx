@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ClipboardList, RefreshCw, Stethoscope, Lightbulb, Heart, Shield, Apple, Info } from 'lucide-react';
+import { ClipboardList, Stethoscope, Lightbulb, Heart, Shield, Apple, Info } from 'lucide-react';
 import { useFormState } from 'react-dom';
-import { symptomCheck } from '@/ai/flows/symptom-check';
+import { symptomCheckFlow } from '@/app/actions';
 import type { SymptomCheckOutput } from '@/ai/flows/symptom-check';
 import { useAppContext } from '@/context/AppContext';
 import { translations } from '@/lib/translations';
@@ -20,18 +20,16 @@ export function HealthTopicsTab() {
   const t = translations[language];
   const inputRef = React.useRef<HTMLInputElement>(null);
   const formRef = React.useRef<HTMLFormElement>(null);
+
+  const [state, formAction] = useFormState(symptomCheckFlow, null);
   const [isPending, startTransition] = React.useTransition();
 
-  const [state, formAction] = useFormState(async (prevState: any, formData: FormData) => {
-    const symptoms = formData.get('symptoms') as string;
-    if (!symptoms) return { conditions: [], advice: '' };
-    return await symptomCheck({ symptoms });
-  }, null);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     startTransition(() => {
-      formAction(new FormData(event.currentTarget));
+      const formData = new FormData(event.currentTarget);
+      formAction(formData);
     });
   };
 
@@ -39,10 +37,10 @@ export function HealthTopicsTab() {
     if (inputRef.current) {
       inputRef.current.value = symptoms;
       if (formRef.current) {
-        const formData = new FormData(formRef.current);
-        formData.set('symptoms', symptoms);
         startTransition(() => {
-          formAction(formData);
+            const formData = new FormData(formRef.current!);
+            formData.set('symptoms', symptoms);
+            formAction(formData);
         });
       }
     }
@@ -77,7 +75,7 @@ export function HealthTopicsTab() {
 
         {isPending && <LoadingSkeleton />}
         
-        {state && !isPending && <ResultsDisplay results={state} t={t.healthTopics} />}
+        {state && !isPending && <ResultsDisplay results={state as SymptomCheckOutput} t={t.healthTopics} />}
 
         <div className="mt-4 rounded-lg bg-gray-100 p-3">
             <h4 className="mb-2 font-medium text-gray-700">{t.healthTopics.commonTopics}</h4>
@@ -175,3 +173,5 @@ const InfoCard = ({ icon: Icon, title, content }: { icon: React.ElementType, tit
         <p className="whitespace-pre-line pt-2 text-sm text-gray-700">{content}</p>
     </div>
 );
+
+    
