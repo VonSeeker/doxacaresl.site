@@ -1,7 +1,7 @@
 'use server';
 
 import { healthQuery } from '@/ai/flows/health-query';
-import { symptomCheck } from '@/ai/flows/symptom-check';
+import { symptomCheck, type SymptomCheckOutput } from '@/ai/flows/symptom-check';
 import type { Language } from '@/context/AppContext';
 
 
@@ -37,12 +37,14 @@ export async function askChatbot(query: string, language: Language): Promise<str
     }
 }
 
-export async function symptomCheckFlow(prevState: any, formData: FormData) {
-  const symptoms = formData.get('symptoms') as string;
-  if (!symptoms) return { conditions: [], advice: '' };
-  
+export type AnalyzeHealthTopicOutput = SymptomCheckOutput;
+
+export async function analyzeHealthTopic(topic: string): Promise<AnalyzeHealthTopicOutput> {
+  if (!topic) {
+    return { conditions: [], advice: '' };
+  }
   try {
-    const result = await symptomCheck({ symptoms });
+    const result = await symptomCheck({ symptoms: topic });
     return result;
   } catch(e) {
     console.error(e);
@@ -50,4 +52,7 @@ export async function symptomCheckFlow(prevState: any, formData: FormData) {
   }
 }
 
-    
+export async function symptomCheckFlow(prevState: any, formData: FormData) {
+  const symptoms = formData.get('symptoms') as string;
+  return analyzeHealthTopic(symptoms);
+}

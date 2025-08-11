@@ -13,16 +13,17 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const SymptomCheckInputSchema = z.object({
-  symptoms: z.string().describe('The symptoms described by the user.'),
+  symptoms: z.string().describe('The symptoms or health topic described by the user.'),
 });
 export type SymptomCheckInput = z.infer<typeof SymptomCheckInputSchema>;
 
 const ConditionSchema = z.object({
   name: z.string().describe('The name of the possible condition.'),
   description: z.string().describe('A brief description of the condition.'),
-  symptoms: z.string().describe('Common symptoms associated with the condition.'),
-  treatment: z.string().describe('Recommended treatments for the condition.'),
-  prevention: z.string().describe('Preventative measures for the condition.'),
+  symptoms: z.array(z.string()).describe('A list of common symptoms associated with the condition.'),
+  treatment: z.array(z.string()).describe('A list of recommended treatments for the condition.'),
+  prevention: z.array(z.string()).describe('A list of preventative measures for the condition.'),
+  emergency: z.array(z.string()).describe('A list of emergency signs that require immediate medical attention.'),
 });
 
 const SymptomCheckOutputSchema = z.object({
@@ -40,9 +41,14 @@ const symptomCheckPrompt = ai.definePrompt({
   name: 'symptomCheckPrompt',
   input: {schema: SymptomCheckInputSchema},
   output: {schema: SymptomCheckOutputSchema},
-  prompt: `You are a medical assistant providing possible conditions based on the symptoms provided by the user.
+  prompt: `You are a medical assistant providing possible conditions based on the symptoms provided by the user from Sierra Leone.
 
-  Based on the following symptoms: {{{symptoms}}}, provide a list of possible conditions, along with a description, common symptoms, treatment, and prevention advice for each.
+  Based on the following symptoms: {{{symptoms}}}, provide a list of possible conditions. For each condition, provide:
+  - A description.
+  - A list of common symptoms.
+  - A list of common treatments.
+  - A list of prevention advice.
+  - A list of emergency signs to watch for.
 
   Also, provide general advice based on the identified conditions.
   `,

@@ -1,176 +1,185 @@
-
 'use client';
 
-import * as React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ClipboardList, Stethoscope, Lightbulb, Heart, Shield, Apple, Info } from 'lucide-react';
-import { useFormState } from 'react-dom';
-import { symptomCheckFlow } from '@/app/actions';
-import type { SymptomCheckOutput } from '@/ai/flows/symptom-check';
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useAppContext } from '@/context/AppContext';
 import { translations } from '@/lib/translations';
-import { healthTopics } from '@/lib/data';
+import { ClipboardPlus, RefreshCw, AlertTriangle, Stethoscope, Lightbulb, Info, Loader2 } from 'lucide-react';
+import { analyzeHealthTopic, AnalyzeHealthTopicOutput } from '@/app/actions';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
 
 export function HealthTopicsTab() {
   const { language } = useAppContext();
   const t = translations[language].healthTopicsTab;
-  const inputRef = React.useRef<HTMLInputElement>(null);
-  const formRef = React.useRef<HTMLFormElement>(null);
+  const [inputValue, setInputValue] = useState('');
+  const [results, setResults] = useState<AnalyzeHealthTopicOutput | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const [state, formAction] = useFormState(symptomCheckFlow, null);
-  const [isPending, startTransition] = React.useTransition();
-
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    startTransition(() => {
-      const formData = new FormData(event.currentTarget);
-      formAction(formData);
-    });
-  };
-
-  const handleTagClick = (symptoms: string) => {
-    if (inputRef.current) {
-      inputRef.current.value = symptoms;
-      if (formRef.current) {
-        startTransition(() => {
-            const formData = new FormData(formRef.current!);
-            formData.set('symptoms', symptoms);
-            formAction(formData);
-        });
-      }
+  const handleSearch = async (topic: string) => {
+    if (!topic.trim()) {
+      setError('Please enter a health topic or symptom.');
+      return;
     }
+    setError(null);
+    setIsLoading(true);
+    setResults(null);
+    setInputValue(topic);
+
+    try {
+        const healthAnalysis = await analyzeHealthTopic(topic);
+        setResults(healthAnalysis);
+    } catch (e) {
+        setError("An unexpected error occurred while analyzing the topic.");
+        console.error(e);
+    } finally {
+        setIsLoading(false);
+    }
+  };
+  
+  const handleTagClick = (topic: string) => {
+    handleSearch(topic);
+  }
+
+  const handleReset = () => {
+    setInputValue('');
+    setResults(null);
+    setError(null);
   };
 
   return (
     <Card className="shadow-md">
       <CardHeader className="bg-primary p-3">
-        <CardTitle className="flex items-center font-bold text-primary-foreground">
-          <ClipboardList className="mr-2 h-5 w-5" />
-          {t.title}
+        <CardTitle className="flex justify-between items-center font-bold text-primary-foreground">
+          <span className="flex items-center">
+            <ClipboardPlus className="mr-2 h-5 w-5" />
+            {t.title}
+          </span>
+          <Button variant="ghost" size="icon" onClick={handleReset} className="text-white hover:bg-white/20">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4">
-        <form ref={formRef} onSubmit={handleSubmit} className="mb-4">
-          <label htmlFor="symptomsInput" className="mb-2 block text-gray-700">
-            {t.inputLabel}
-          </label>
+      <CardContent className="p-4 space-y-4">
+        <div>
+          <label htmlFor="symptomsInput" className="block text-sm font-medium text-gray-700 mb-2">{t.inputLabel}</label>
           <div className="flex">
             <Input
-              ref={inputRef}
               id="symptomsInput"
-              name="symptoms"
-              className="rounded-r-none border-gray-300 focus:ring-primary/50"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch(inputValue)}
               placeholder={t.placeholder}
+              className="rounded-r-none border-gray-300 focus:ring-primary/50"
+              disabled={isLoading}
             />
-            <Button type="submit" className="rounded-l-none" disabled={isPending}>
-              {isPending ? 'Analyzing...' : t.button}
+            <Button onClick={() => handleSearch(inputValue)} className="rounded-l-none" disabled={isLoading}>
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t.button}
             </Button>
           </div>
-        </form>
-
-        {isPending && <LoadingSkeleton />}
-        
-        {state && !isPending && <ResultsDisplay results={state as SymptomCheckOutput} t={t} />}
-
-        <div className="mt-4 rounded-lg bg-gray-100 p-3">
-            <h4 className="mb-2 font-medium text-gray-700">{t.commonTopics}</h4>
-            <div className="flex flex-wrap gap-2">
-                {healthTopics.diseases.map(tag => (
-                    <Button key={tag.topic} variant="outline" size="sm" className="bg-white border-blue-200 text-blue-700" onClick={() => handleTagClick(tag.symptoms)}>
-                        {tag.topic}
-                    </Button>
-                ))}
-            </div>
+          {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
         </div>
 
-        <div className="mt-4 rounded-lg bg-gray-100 p-3">
-            <h4 className="mb-2 font-medium text-gray-700">{t.commonSymptoms}</h4>
-            <div className="flex flex-wrap gap-2">
-                {t.symptoms.map(tag => (
-                    <Button key={tag} variant="outline" size="sm" className="bg-white border-blue-200 text-blue-700 rounded-full" onClick={() => handleTagClick(tag)}>
-                        {tag}
-                    </Button>
-                ))}
+        {isLoading && (
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-3">Analyzing topic...</span>
+          </div>
+        )}
+        
+        {results && results.conditions && (
+          <div className="border-t pt-4 space-y-4">
+             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <h4 className="font-medium text-blue-800 mb-3 flex items-center">
+                <Stethoscope className="mr-2 h-5 w-5" />
+                {t.resultsTitle}
+              </h4>
+              {results.conditions.length > 0 ? (
+                results.conditions.map((cond, index) => (
+                    <div key={index} className="mb-4 last:mb-0">
+                      <h5 className="font-semibold text-blue-700">{cond.name}</h5>
+                      <p className="text-sm text-gray-600 mb-2">{cond.description}</p>
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2 text-sm">
+                          <div className="bg-white p-2 rounded border">
+                              <h6 className="text-xs font-medium text-gray-500">Symptoms</h6>
+                              <ul className="list-disc list-inside mt-1">{cond.symptoms.map((s, i) => <li key={i}>{s}</li>)}</ul>
+                          </div>
+                          <div className="bg-white p-2 rounded border">
+                              <h6 className="text-xs font-medium text-gray-500">Treatment</h6>
+                              <ul className="list-disc list-inside mt-1">{cond.treatment.map((s, i) => <li key={i}>{s}</li>)}</ul>
+                          </div>
+                          <div className="bg-white p-2 rounded border">
+                              <h6 className="text-xs font-medium text-gray-500">Prevention</h6>
+                              <ul className="list-disc list-inside mt-1">{cond.prevention.map((s, i) => <li key={i}>{s}</li>)}</ul>
+                          </div>
+                          <div className="bg-red-50 p-2 rounded border border-red-200">
+                              <h6 className="text-xs font-medium text-red-700 flex items-center"><AlertTriangle className="w-3 h-3 mr-1" />Emergency Signs</h6>
+                              <ul className="list-disc list-inside mt-1 text-red-800">{cond.emergency.map((s, i) => <li key={i}>{s}</li>)}</ul>
+                          </div>
+                      </div>
+                    </div>
+                  ))
+              ) : (
+                <p className="text-sm text-gray-600">No specific conditions found for this topic. Try a different search.</p>
+              )}
+
+              {results.advice && (
+                <Alert className="bg-yellow-50 border-yellow-200 mt-4">
+                    <Lightbulb className="h-4 w-4 text-yellow-700" />
+                    <AlertTitle className="text-yellow-800">Recommended Actions</AlertTitle>
+                    <AlertDescription className="text-yellow-900">
+                        {results.advice}
+                    </AlertDescription>
+                </Alert>
+              )}
+
+              <div className="mt-3 text-xs text-gray-500 flex items-center">
+                <Info className="mr-1 h-3 w-3" />
+                Note: This is not a diagnosis. Please consult a healthcare provider.
+              </div>
             </div>
+          </div>
+        )}
+
+        <div className="mt-4 p-3 bg-gray-100 rounded-lg">
+          <h4 className="font-medium text-gray-700 mb-2">{t.commonTopics}</h4>
+          <div className="flex flex-wrap gap-2">
+            {healthTopics.diseases.map(tag => (
+                <Badge key={tag.topic} variant="outline" className="cursor-pointer bg-white border-blue-200 text-blue-700 hover:bg-blue-50" onClick={() => handleTagClick(tag.symptoms)}>
+                    {tag.topic}
+                </Badge>
+            ))}
+          </div>
+        </div>
+        <div className="mt-4 p-3 bg-gray-100 rounded-lg">
+          <h4 className="font-medium text-gray-700 mb-2">{t.commonSymptoms}</h4>
+          <div className="flex flex-wrap gap-2">
+            {t.symptoms.map(symptom => (
+              <Badge key={symptom} variant="outline" className="cursor-pointer bg-white border-blue-200 text-blue-700 hover:bg-blue-50" onClick={() => handleTagClick(symptom)}>
+                {symptom}
+              </Badge>
+            ))}
+          </div>
         </div>
       </CardContent>
     </Card>
   );
 }
 
-const LoadingSkeleton = () => (
-    <div className="space-y-4 pt-4 border-t">
-        <Skeleton className="h-8 w-1/2" />
-        <div className="space-y-2">
-            <Skeleton className="h-6 w-full" />
-            <Skeleton className="h-6 w-5/6" />
-        </div>
-         <Skeleton className="h-8 w-1/3" />
-        <div className="space-y-2">
-            <Skeleton className="h-6 w-full" />
-            <Skeleton className="h-6 w-full" />
-        </div>
-    </div>
-);
-
-const ResultsDisplay = ({ results, t }: { results: SymptomCheckOutput, t: any }) => {
-    if (!results.conditions || results.conditions.length === 0) {
-        return <p className="pt-4 border-t text-gray-600">No specific conditions found. Please consult a doctor for advice.</p>;
-    }
-
-    return (
-        <div className="space-y-4 border-t pt-4">
-            <h3 className="flex items-center text-lg font-semibold text-gray-800">
-                <Stethoscope className="mr-2 h-6 w-6 text-primary" />
-                {t.resultsTitle}
-            </h3>
-            
-            <Accordion type="single" collapsible defaultValue="item-0" className="w-full">
-                {results.conditions.map((condition, index) => (
-                    <AccordionItem key={index} value={`item-${index}`} className="border-b-0">
-                        <AccordionTrigger className="rounded-lg bg-blue-50 px-4 text-blue-800 hover:no-underline hover:bg-blue-100">
-                            {condition.name}
-                        </AccordionTrigger>
-                        <AccordionContent className="p-4 space-y-3">
-                            <p className="text-gray-600">{condition.description}</p>
-                            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                                <InfoCard icon={Heart} title="Symptoms" content={condition.symptoms} />
-                                <InfoCard icon={Shield} title="Treatment" content={condition.treatment} />
-                                <InfoCard icon={Apple} title="Prevention" content={condition.prevention} />
-                            </div>
-                        </AccordionContent>
-                    </AccordionItem>
-                ))}
-            </Accordion>
-            
-            <Alert className="bg-yellow-50 border-yellow-200">
-                 <Lightbulb className="h-4 w-4 text-yellow-700" />
-                <AlertTitle className="text-yellow-800">Recommended Actions</AlertTitle>
-                <AlertDescription className="text-yellow-900">
-                    {results.advice}
-                </AlertDescription>
-            </Alert>
-
-            <div className="mt-3 text-xs text-gray-500 flex items-center">
-                <Info className="mr-1 h-3 w-3" />
-                Note: This is not a diagnosis. Please consult a healthcare provider for proper evaluation.
-            </div>
-        </div>
-    );
+const healthTopics = {
+    diseases: [
+        { topic: 'Malaria', symptoms: 'fever, chills, headache, muscle pain' },
+        { topic: 'Typhoid', symptoms: 'fever, abdominal pain, constipation, diarrhea' },
+        { topic: 'Cholera', symptoms: 'watery diarrhea, vomiting, dehydration' },
+        { topic: 'Dengue', symptoms: 'high fever, severe headache, eye pain, muscle pain' },
+        { topic: 'Pneumonia', symptoms: 'cough, fever, difficulty breathing' },
+        { topic: 'Meningitis', symptoms: 'fever, headache, stiff neck, sensitivity to light' },
+        { topic: 'Lassa Fever', symptoms: 'fever, skin rash, conjunctivitis, muscle pain' },
+        { topic: 'COVID-19', symptoms: 'fever, cough, loss of taste/smell, difficulty breathing' },
+    ],
+    symptoms: ['Fever', 'Exercise', 'Nutrition', 'Pregnancy', 'Diabetes', 'Mental Health']
 };
-
-const InfoCard = ({ icon: Icon, title, content }: { icon: React.ElementType, title: string, content: string }) => (
-    <div className="rounded border bg-white p-3">
-        <h6 className="flex items-center text-sm font-medium text-gray-600">
-            <Icon className="mr-2 h-4 w-4" />
-            {title}
-        </h6>
-        <p className="whitespace-pre-line pt-2 text-sm text-gray-700">{content}</p>
-    </div>
-);
