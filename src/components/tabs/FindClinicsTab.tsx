@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -11,7 +12,7 @@ import { translations } from '@/lib/translations';
 
 export function FindClinicsTab() {
   const { language } = useAppContext();
-  const t = translations[language];
+  const t = translations[language].clinicsTab;
   const [searchQuery, setSearchQuery] = React.useState('');
   const [filteredClinics, setFilteredClinics] = React.useState<Clinic[]>(clinics);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -38,27 +39,27 @@ export function FindClinicsTab() {
 
   return (
     <Card className="shadow-md">
-      <CardHeader className="bg-red-600 p-3">
-        <CardTitle className="flex items-center font-bold text-white">
+      <CardHeader className="bg-primary p-3">
+        <CardTitle className="flex items-center font-bold text-primary-foreground">
           <Hospital className="mr-2 h-5 w-5" />
-          {t.findClinics.title}
+          {t.title}
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4">
         <form onSubmit={handleSearch} className="mb-4">
           <label htmlFor="locationInput" className="mb-2 block text-gray-700">
-            {t.findClinics.label}
+            {t.locationLabel}
           </label>
           <div className="flex">
             <Input
               id="locationInput"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="rounded-r-none border-gray-300 focus:ring-red-500"
-              placeholder={t.findClinics.placeholder}
+              className="rounded-r-none border-gray-300 focus:ring-primary/50"
+              placeholder={t.locationPlaceholder}
             />
-            <Button type="submit" className="rounded-l-none bg-red-600 hover:bg-red-700" disabled={isLoading}>
-              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t.findClinics.button}
+            <Button type="submit" className="rounded-l-none" disabled={isLoading}>
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t.searchButton}
             </Button>
           </div>
         </form>
@@ -66,13 +67,13 @@ export function FindClinicsTab() {
         <div className="space-y-4">
           {isLoading ? (
             <div className="flex items-center justify-center py-4">
-              <Loader2 className="mr-3 h-8 w-8 animate-spin text-red-600" />
-              <span>{t.findClinics.loading}</span>
+              <Loader2 className="mr-3 h-8 w-8 animate-spin text-primary" />
+              <span>{t.loading}</span>
             </div>
           ) : filteredClinics.length > 0 ? (
-            filteredClinics.map((clinic) => <ClinicCard key={clinic.name} clinic={clinic} t={t.findClinics} />)
+            filteredClinics.map((clinic) => <ClinicCard key={clinic.name} clinic={clinic} t={t} />)
           ) : (
-            <p className="py-4 text-center text-gray-600">{t.findClinics.noResults}</p>
+            <p className="py-4 text-center text-gray-600">{t.noResults}</p>
           )}
         </div>
       </CardContent>
@@ -89,7 +90,7 @@ const ClinicCard = ({ clinic, t }: { clinic: Clinic, t: any }) => (
       </div>
       {clinic.is24Hour && (
         <span className="mt-2 rounded bg-green-100 px-2 py-1 text-xs text-green-800 sm:mt-0">
-          {t.hours24}
+          24-Hour
         </span>
       )}
     </div>

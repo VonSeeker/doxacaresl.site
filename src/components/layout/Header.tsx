@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useAppContext } from '@/context/AppContext';
@@ -12,7 +13,7 @@ export function Header() {
 
   return (
     <>
-      <header className="bg-gradient-to-r from-green-700 to-yellow-500 shadow-md">
+      <header className="bg-gradient-to-r from-primary to-accent shadow-md">
         <div className="container mx-auto flex items-center justify-between px-4 py-3">
           <div className="flex items-center space-x-2">
             <HeartPulse className="h-7 w-7 text-white" />
@@ -23,9 +24,9 @@ export function Header() {
               onClick={toggleLanguage}
               variant="outline"
               size="sm"
-              className="rounded-full bg-white/90 text-sm font-medium text-green-800 transition hover:bg-white hover:scale-105"
+              className="rounded-full bg-white/90 text-sm font-medium text-primary transition hover:bg-white hover:scale-105"
             >
-              <span>{t.header.language}</span>
+              <span>{language === 'en' ? t.header.krio : t.header.english}</span>
               <ArrowRightLeft className="ml-1 h-4 w-4" />
             </Button>
             <Button

@@ -20,9 +20,9 @@ export default function Home() {
 
   const TABS = [
     { value: 'home', label: t.tabs.home, icon: <HomeIcon className="mr-2 h-5 w-5" /> },
-    { value: 'symptoms', label: t.tabs.healthTopics, icon: <ClipboardList className="mr-2 h-5 w-5" /> },
-    { value: 'blog', label: t.tabs.healthBlog, icon: <BookText className="mr-2 h-5 w-5" /> },
-    { value: 'clinics', label: t.tabs.findClinics, icon: <Hospital className="mr-2 h-5 w-5" /> },
+    { value: 'symptoms', label: t.tabs.healthCheck, icon: <ClipboardList className="mr-2 h-5 w-5" /> },
+    { value: 'blog', label: t.tabs.blog, icon: <BookText className="mr-2 h-5 w-5" /> },
+    { value: 'clinics', label: t.tabs.clinics, icon: <Hospital className="mr-2 h-5 w-5" /> },
   ];
 
   return (
@@ -36,7 +36,7 @@ export default function Home() {
                   <TabsTrigger
                     key={tab.value}
                     value={tab.value}
-                    className="whitespace-nowrap rounded-none border-b-2 border-transparent px-4 py-3 font-medium text-gray-600 data-[state=active]:border-green-700 data-[state=active]:bg-green-50 data-[state=active]:text-green-700 data-[state=active]:shadow-none"
+                    className="whitespace-nowrap rounded-none border-b-2 border-transparent px-4 py-3 font-medium text-gray-600 data-[state=active]:border-primary data-[state=active]:bg-green-50 data-[state=active]:text-primary data-[state=active]:shadow-none"
                   >
                     {tab.icon}
                     {tab.label}

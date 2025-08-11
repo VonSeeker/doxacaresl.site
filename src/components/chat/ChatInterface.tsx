@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
@@ -35,7 +36,7 @@ interface ChatInterfaceProps {}
 
 const ChatInterface = forwardRef<ChatInterfaceHandles, ChatInterfaceProps>((props, ref) => {
   const { language } = useAppContext();
-  const t = translations[language].home.chat;
+  const t = translations[language].homeTab.chat;
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -98,8 +99,8 @@ const ChatInterface = forwardRef<ChatInterfaceHandles, ChatInterfaceProps>((prop
 
   return (
     <Card className="overflow-hidden shadow-md">
-      <CardHeader className="bg-green-600 p-3">
-        <CardTitle className="flex items-center font-bold text-white text-base">
+      <CardHeader className="bg-primary p-3">
+        <CardTitle className="flex items-center font-bold text-primary-foreground text-base">
           <MessageCircle className="mr-2 h-5 w-5" />
           {t.title}
         </CardTitle>
@@ -113,7 +114,7 @@ const ChatInterface = forwardRef<ChatInterfaceHandles, ChatInterfaceProps>((prop
             >
               {msg.sender === 'bot' && (
                 <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-green-700 text-white">
+                  <AvatarFallback className="bg-primary text-primary-foreground">
                     <Bot className="h-5 w-5" />
                   </AvatarFallback>
                 </Avatar>
@@ -121,7 +122,7 @@ const ChatInterface = forwardRef<ChatInterfaceHandles, ChatInterfaceProps>((prop
               <div
                 className={cn(
                   'rounded-lg px-3 py-2 max-w-[80%] shadow-sm',
-                  msg.sender === 'user' ? 'bg-green-100' : 'bg-white'
+                  msg.sender === 'user' ? 'bg-primary/20' : 'bg-white'
                 )}
               >
                 <p className="text-sm text-foreground whitespace-pre-wrap">{msg.text}</p>
@@ -151,7 +152,7 @@ const ChatInterface = forwardRef<ChatInterfaceHandles, ChatInterfaceProps>((prop
           {isLoading && (
             <div className="flex items-end gap-2 justify-start">
               <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-green-700 text-white">
+                <AvatarFallback className="bg-primary text-primary-foreground">
                   <Bot className="h-5 w-5" />
                 </AvatarFallback>
               </Avatar>
@@ -179,10 +180,10 @@ const ChatInterface = forwardRef<ChatInterfaceHandles, ChatInterfaceProps>((prop
             <Input
               {...register('message')}
               placeholder={t.placeholder}
-              className="flex-grow bg-white focus:ring-2 focus:ring-green-500 rounded-full"
+              className="flex-grow bg-white focus:ring-2 focus:ring-primary/50 rounded-full"
               disabled={isLoading}
             />
-            <Button type="submit" size="icon" className="ml-2 shrink-0 rounded-full bg-green-600 text-white transition-colors hover:bg-green-700" disabled={isLoading}>
+            <Button type="submit" size="icon" className="ml-2 shrink-0 rounded-full bg-primary text-white transition-colors hover:bg-primary/90" disabled={isLoading}>
               <Send className="h-5 w-5" />
             </Button>
           </form>

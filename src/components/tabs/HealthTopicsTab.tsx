@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -17,7 +18,7 @@ import { healthTopics } from '@/lib/data';
 
 export function HealthTopicsTab() {
   const { language } = useAppContext();
-  const t = translations[language];
+  const t = translations[language].healthTopicsTab;
   const inputRef = React.useRef<HTMLInputElement>(null);
   const formRef = React.useRef<HTMLFormElement>(null);
 
@@ -48,37 +49,37 @@ export function HealthTopicsTab() {
 
   return (
     <Card className="shadow-md">
-      <CardHeader className="bg-blue-600 p-3">
-        <CardTitle className="flex items-center font-bold text-white">
+      <CardHeader className="bg-primary p-3">
+        <CardTitle className="flex items-center font-bold text-primary-foreground">
           <ClipboardList className="mr-2 h-5 w-5" />
-          {t.healthTopics.title}
+          {t.title}
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4">
         <form ref={formRef} onSubmit={handleSubmit} className="mb-4">
           <label htmlFor="symptomsInput" className="mb-2 block text-gray-700">
-            {t.healthTopics.label}
+            {t.inputLabel}
           </label>
           <div className="flex">
             <Input
               ref={inputRef}
               id="symptomsInput"
               name="symptoms"
-              className="rounded-r-none border-gray-300 focus:ring-blue-500"
-              placeholder={t.healthTopics.placeholder}
+              className="rounded-r-none border-gray-300 focus:ring-primary/50"
+              placeholder={t.placeholder}
             />
-            <Button type="submit" className="rounded-l-none bg-blue-600 hover:bg-blue-700" disabled={isPending}>
-              {isPending ? t.healthTopics.loading : t.healthTopics.button}
+            <Button type="submit" className="rounded-l-none" disabled={isPending}>
+              {isPending ? 'Analyzing...' : t.button}
             </Button>
           </div>
         </form>
 
         {isPending && <LoadingSkeleton />}
         
-        {state && !isPending && <ResultsDisplay results={state as SymptomCheckOutput} t={t.healthTopics} />}
+        {state && !isPending && <ResultsDisplay results={state as SymptomCheckOutput} t={t} />}
 
         <div className="mt-4 rounded-lg bg-gray-100 p-3">
-            <h4 className="mb-2 font-medium text-gray-700">{t.healthTopics.commonTopics}</h4>
+            <h4 className="mb-2 font-medium text-gray-700">{t.commonTopics}</h4>
             <div className="flex flex-wrap gap-2">
                 {healthTopics.diseases.map(tag => (
                     <Button key={tag.topic} variant="outline" size="sm" className="bg-white border-blue-200 text-blue-700" onClick={() => handleTagClick(tag.symptoms)}>
@@ -89,9 +90,9 @@ export function HealthTopicsTab() {
         </div>
 
         <div className="mt-4 rounded-lg bg-gray-100 p-3">
-            <h4 className="mb-2 font-medium text-gray-700">{t.healthTopics.commonSymptoms}</h4>
+            <h4 className="mb-2 font-medium text-gray-700">{t.commonSymptoms}</h4>
             <div className="flex flex-wrap gap-2">
-                {healthTopics.symptoms.map(tag => (
+                {t.symptoms.map(tag => (
                     <Button key={tag} variant="outline" size="sm" className="bg-white border-blue-200 text-blue-700 rounded-full" onClick={() => handleTagClick(tag)}>
                         {tag}
                     </Button>
@@ -120,13 +121,13 @@ const LoadingSkeleton = () => (
 
 const ResultsDisplay = ({ results, t }: { results: SymptomCheckOutput, t: any }) => {
     if (!results.conditions || results.conditions.length === 0) {
-        return <p className="pt-4 border-t text-gray-600">{t.noResults}</p>;
+        return <p className="pt-4 border-t text-gray-600">No specific conditions found. Please consult a doctor for advice.</p>;
     }
 
     return (
         <div className="space-y-4 border-t pt-4">
             <h3 className="flex items-center text-lg font-semibold text-gray-800">
-                <Stethoscope className="mr-2 h-6 w-6 text-blue-600" />
+                <Stethoscope className="mr-2 h-6 w-6 text-primary" />
                 {t.resultsTitle}
             </h3>
             
@@ -173,5 +174,3 @@ const InfoCard = ({ icon: Icon, title, content }: { icon: React.ElementType, tit
         <p className="whitespace-pre-line pt-2 text-sm text-gray-700">{content}</p>
     </div>
 );
-
-    

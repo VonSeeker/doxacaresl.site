@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useAppContext } from '@/context/AppContext';
@@ -10,8 +11,6 @@ export function EmergencyModal() {
   const { language, isEmergencyModalOpen, setEmergencyModalOpen } = useAppContext();
   const t = translations[language].emergencyModal;
 
-  const actionIcons = [Phone, Hospital, User];
-
   return (
     <AlertDialog open={isEmergencyModalOpen} onOpenChange={setEmergencyModalOpen}>
       <AlertDialogContent>
@@ -21,22 +20,25 @@ export function EmergencyModal() {
             {t.title}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-gray-700">
-            {t.intro}
+            {t.description}
             <ul className="space-y-2 my-4">
-              {t.actions.map((action, index) => {
-                const Icon = actionIcons[index];
-                return (
-                  <li key={index} className="flex items-start">
-                    <Icon className="mr-2 mt-1 h-4 w-4 shrink-0 text-red-500" />
-                    <span>{action}</span>
-                  </li>
-                );
-              })}
+              <li className="flex items-start">
+                <Phone className="mr-2 mt-1 h-4 w-4 shrink-0 text-red-500" />
+                <span>{t.callServices.label} <strong>{t.callServices.number}</strong></span>
+              </li>
+              <li className="flex items-start">
+                <Hospital className="mr-2 mt-1 h-4 w-4 shrink-0 text-red-500" />
+                <span>{t.goToHospital}</span>
+              </li>
+              <li className="flex items-start">
+                <User className="mr-2 mt-1 h-4 w-4 shrink-0 text-red-500" />
+                <span>{t.alertSomeone}</span>
+              </li>
             </ul>
             <div className="rounded border border-red-200 bg-red-50 p-3">
-              <p className="text-sm font-medium text-red-800">{t.warningTitle}</p>
+              <p className="text-sm font-medium text-red-800">{t.immediateHelpTitle}</p>
               <ul className="mt-1 list-disc list-inside pl-2 text-sm text-red-700">
-                {t.symptoms.map(symptom => <li key={symptom}>{symptom}</li>)}
+                {t.immediateHelpItems.map(symptom => <li key={symptom}>{symptom}</li>)}
               </ul>
             </div>
           </AlertDialogDescription>
