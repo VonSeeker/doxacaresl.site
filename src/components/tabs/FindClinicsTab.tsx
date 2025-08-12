@@ -16,13 +16,15 @@ export function FindClinicsTab() {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [filteredClinics, setFilteredClinics] = React.useState<Clinic[] | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [hasSearched, setHasSearched] = React.useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setHasSearched(true);
     setTimeout(() => {
       if (searchQuery.trim() === '') {
-        setFilteredClinics(clinics);
+        setFilteredClinics([]);
       } else {
         const lowercasedQuery = searchQuery.toLowerCase();
         const results = clinics.filter(
@@ -70,12 +72,12 @@ export function FindClinicsTab() {
               <Loader2 className="mr-3 h-8 w-8 animate-spin text-primary" />
               <span>{t.loading}</span>
             </div>
-          ) : filteredClinics === null ? (
+          ) : !hasSearched ? (
             <div className="py-8 text-center text-gray-500">
               <Search className="mx-auto h-12 w-12 text-gray-400" />
-              <p className="mt-4">Please enter a location to find clinics near you.</p>
+              <p className="mt-4">Please enter a district, city, or clinic name to find healthcare facilities.</p>
             </div>
-          ) : filteredClinics.length > 0 ? (
+          ) : filteredClinics && filteredClinics.length > 0 ? (
             filteredClinics.map((clinic) => <ClinicCard key={clinic.name} clinic={clinic} t={t} />)
           ) : (
             <p className="py-4 text-center text-gray-600">{t.noResults}</p>
@@ -102,7 +104,7 @@ const ClinicCard = ({ clinic, t }: { clinic: Clinic, t: any }) => (
     <div className="mt-2 space-y-1 text-sm">
         <div className="flex items-center text-sm">
             <MapPin className="mr-2 h-4 w-4 text-blue-500" />
-            <span>{clinic.location}</span>
+            <span>{clinic.location}, <span className="capitalize">{clinic.district}</span></span>
         </div>
         {clinic.phone && (
         <div className="flex items-center text-sm">
