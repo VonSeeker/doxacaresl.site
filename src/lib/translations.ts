@@ -116,7 +116,7 @@ export const translations = {
     },
     emergencyModal: {
         title: 'Emergency Assistance',
-        description: "If you\'re experiencing a medical emergency, please take these immediate actions:",
+        description: "If you're experiencing a medical emergency, please take these immediate actions:",
         callServices: { label: 'Call emergency services:', number: '117 or 112' },
         goToHospital: 'Go to the nearest hospital immediately',
         alertSomeone: 'Alert someone nearby for assistance',

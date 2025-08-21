@@ -2,8 +2,9 @@
 'use client';
 
 import * as React from 'react';
-import { ClipboardList, BookText, Hospital } from 'lucide-react';
+import { Home, ClipboardList, BookText, Hospital } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { HomeTab } from '@/components/tabs/HomeTab';
 import { HealthTopicsTab } from '@/components/tabs/HealthTopicsTab';
 import { HealthBlogTab } from '@/components/tabs/HealthBlogTab';
 import { FindClinicsTab } from '@/components/tabs/FindClinicsTab';
@@ -16,10 +17,11 @@ export default function TabsPage() {
   const t = translations[language];
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialTab = searchParams.get('tab') || 'symptoms';
+  const initialTab = searchParams.get('tab') || 'home';
   const [activeTab, setActiveTab] = React.useState(initialTab);
 
   const TABS = [
+    { value: 'home', label: t.tabs.home, icon: <Home className="mr-2 h-5 w-5" /> },
     { value: 'symptoms', label: t.tabs.healthCheck, icon: <ClipboardList className="mr-2 h-5 w-5" /> },
     { value: 'blog', label: t.tabs.blog, icon: <BookText className="mr-2 h-5 w-5" /> },
     { value: 'clinics', label: t.tabs.clinics, icon: <Hospital className="mr-2 h-5 w-5" /> },
@@ -52,6 +54,9 @@ export default function TabsPage() {
 
         <div className="flex-grow bg-background">
           <div className="container mx-auto px-4 py-6">
+            <TabsContent value="home">
+              <HomeTab setActiveTab={handleTabChange} />
+            </TabsContent>
             <TabsContent value="symptoms">
               <HealthTopicsTab />
             </TabsContent>
