@@ -16,7 +16,7 @@ export function Header() {
     <>
       <header className="bg-gradient-to-r from-primary to-accent shadow-md print:hidden">
         <div className="container mx-auto flex items-center justify-between px-4 py-3">
-          <Link href="/" className="flex items-center space-x-2">
+          <Link href="/main" className="flex items-center space-x-2">
             <HeartPulse className="h-7 w-7 text-white" />
             <h1 className="text-xl font-bold text-white md:text-2xl">{t.header.title}</h1>
           </Link>
