@@ -1,16 +1,29 @@
 
 'use client';
 
-import { useAppContext } from '@/context/AppContext';
+import { useAppContext, Language } from '@/context/AppContext';
 import { translations } from '@/lib/translations';
 import { Button } from '@/components/ui/button';
-import { HeartPulse, ArrowRightLeft, TriangleAlert } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { HeartPulse, TriangleAlert, Languages } from 'lucide-react';
 import { EmergencyModal } from './EmergencyModal';
 import Link from 'next/link';
 
 export function Header() {
-  const { language, toggleLanguage, setEmergencyModalOpen } = useAppContext();
+  const { language, setLanguage, setEmergencyModalOpen } = useAppContext();
   const t = translations[language];
+
+  const languages: { code: Language, name: string }[] = [
+      { code: 'en', name: 'English'},
+      { code: 'krio', name: 'Krio'},
+      { code: 'mende', name: 'Mende'},
+      { code: 'temne', name: 'Temne'}
+  ]
 
   return (
     <>
@@ -21,15 +34,26 @@ export function Header() {
             <h1 className="text-xl font-bold text-white md:text-2xl">{t.header.title}</h1>
           </Link>
           <div className="flex items-center space-x-2 md:space-x-4">
-            <Button
-              onClick={toggleLanguage}
-              variant="outline"
-              size="sm"
-              className="rounded-full bg-white/90 text-sm font-medium text-primary transition hover:bg-white hover:scale-105"
-            >
-              <span>{language === 'en' ? t.header.krio : t.header.english}</span>
-              <ArrowRightLeft className="ml-1 h-4 w-4" />
-            </Button>
+             <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full bg-white/90 text-sm font-medium text-primary transition hover:bg-white hover:scale-105"
+                    >
+                        <Languages className="mr-1 h-4 w-4" />
+                        <span>{t.header.language}</span>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                    {languages.map(lang => (
+                         <DropdownMenuItem key={lang.code} onClick={() => setLanguage(lang.code)}>
+                            {lang.name}
+                        </DropdownMenuItem>
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
+
             <Button
               onClick={() => setEmergencyModalOpen(true)}
               variant="destructive"

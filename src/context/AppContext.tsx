@@ -2,16 +2,15 @@
 
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 
-export type Language = 'en' | 'krio';
+export type Language = 'en' | 'krio' | 'mende' | 'temne';
 
 interface AppContextType {
   language: Language;
-  toggleLanguage: () => void;
+  setLanguage: (lang: Language) => void;
   isEmergencyModalOpen: boolean;
   setEmergencyModalOpen: (isOpen: boolean) => void;
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  setLanguage: (lang: Language) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -21,13 +20,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isEmergencyModalOpen, setEmergencyModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
 
-  const toggleLanguage = () => {
-    setLanguage((prev) => (prev === 'en' ? 'krio' : 'en'));
-  };
-
   const value = {
     language,
-    toggleLanguage,
     setLanguage,
     isEmergencyModalOpen,
     setEmergencyModalOpen,
