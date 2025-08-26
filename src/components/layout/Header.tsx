@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { HeartPulse, TriangleAlert, Languages } from 'lucide-react';
+import { HeartPulse, TriangleAlert, Languages, ChevronDown } from 'lucide-react';
 import { EmergencyModal } from './EmergencyModal';
 import Link from 'next/link';
 
@@ -24,6 +24,8 @@ export function Header() {
       { code: 'mende', name: 'Mende'},
       { code: 'temne', name: 'Temne'}
   ]
+
+  const currentLanguageName = languages.find(lang => lang.code === language)?.name || 'Language';
 
   return (
     <>
@@ -42,7 +44,8 @@ export function Header() {
                         className="rounded-full bg-white/90 text-sm font-medium text-primary transition hover:bg-white hover:scale-105"
                     >
                         <Languages className="mr-1 h-4 w-4" />
-                        <span>{t.header.language}</span>
+                        <span>{currentLanguageName}</span>
+                        <ChevronDown className="ml-1 h-4 w-4" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
